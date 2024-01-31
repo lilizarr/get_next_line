@@ -1,16 +1,101 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: lilizarr <lilizarr@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/10/12 11:53:20 by lilizarr          #+#    #+#             */
-/*   Updated: 2022/11/18 18:13:32 by lilizarr         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
+#include <unistd.h>
+#include <stdlib.h>
+#include <limits.h>
 
-#include "get_next_line.h"
+#ifndef BUFFER_SIZE
+# define BUFFER_SIZE 1
+#endif
+
+typedef struct s_list
+{
+	char			*str;
+	struct s_list	*next;
+}	t_list;
+
+size_t	ft_strlen(const char *str)
+{
+	size_t	cnt;
+
+	cnt = 0;
+	while (str[cnt])
+		cnt++;
+	return (cnt);
+}
+
+char	*ft_strchr(const char *s, int c)
+{
+	while (*s)
+	{
+		if (*s == (char)c)
+			return ((char *)s);
+		s++;
+	}
+	if (!(*s) && !c)
+		return ((char *)s);
+	return (NULL);
+}
+
+void	print_list(t_list **list)
+{
+	t_list	*print;
+	int		i;
+
+	i = 0;
+	print = *list;
+	while (print)
+	{
+		print = print->next;
+		i++;
+	}
+	print = *list;
+	printf("\n------------- List HEAD Address : %p\t NODES: %d\n", *list, i);
+	while (print)
+	{
+		printf("%s", print->str);
+		print = print->next;
+		i++;
+	}
+}
+
+void	*ft_memcpy(void *dest, const void *src, size_t n)
+{
+	size_t	i;
+
+	i = n - 1;
+	while (n-- && (dest != NULL || src != NULL))
+		((char *)dest)[i - n] = (*(const char *)(src + (i - n)));
+	return (dest);
+}
+
+char	*ft_strdup_len(char *s1, size_t n)
+{
+	char	*aux;
+
+	aux = (char *)malloc(n + 1);
+	if (aux == NULL)
+		return (NULL);
+	aux = ft_memcpy(aux, s1, n);
+	aux[n] = '\0';
+	return (aux);
+}
+
+char	*ft_strjoin(char const *s1, char const *s2)
+{
+	char	*str_join;
+
+	if (s1 && s2)
+	{
+		str_join = (char *)malloc(ft_strlen(s1) + ft_strlen(s2) + 1);
+		if (!str_join)
+			return (NULL);
+		ft_memcpy(str_join, s1, ft_strlen(s1));
+		ft_memcpy(str_join + ft_strlen(s1), s2, ft_strlen(s2) + 1);
+		free((void *)s1);
+		return ((char *)str_join);
+	}
+	else
+		return (NULL);
+}
 
 void	add_node_to_list(t_list **list, char *read_buffer, int ret)
 {
@@ -33,6 +118,7 @@ void	add_node_to_list(t_list **list, char *read_buffer, int ret)
 		while (last->next != NULL)
 			last = last->next;
 	}
+	print_list(list);
 }
 
 void	free_node_list(void **list)
@@ -119,6 +205,7 @@ char	*get_next_line(int fd)
 			add_node_to_list(&list, read_buffer, ret);
 	}
 	free(read_buffer);
+	print_list(&list);
 	search_line(&list, &line);
 	return (&*line);
 }
